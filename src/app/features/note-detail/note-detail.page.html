@@ -81,8 +81,12 @@
       </div>
     </div>
 
-    <div class="flex items-center justify-between">
-      <qn-formatting-toolbar />
+    <div class="flex items-center justify-between overflow-x-auto">
+      <div class="flex items-center">
+        <qn-formatting-toolbar />
+        <div class="mx-1 h-6 w-px shrink-0 bg-neutral-200 dark:bg-neutral-700"></div>
+        <qn-gadgets-toolbar />
+      </div>
       <button
         type="button"
         class="mr-2 shrink-0 rounded-lg p-2 text-neutral-600 hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/5"

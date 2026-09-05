@@ -19,3 +19,105 @@ html.light body {
   background: #fafafa;
   color: #111827;
 }
+
+/* Editor gadgets: horizontal dividers and tables inserted via the gadgets toolbar. */
+
+.qn-hr {
+  width: 100%;
+  height: 1px;
+  margin: 1.25rem 0;
+  border: none;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+html.dark .qn-hr {
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.qn-table-wrap {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+  margin: 0.75rem 0;
+  padding: 14px;
+}
+
+.qn-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  overflow: hidden;
+  outline: none;
+}
+
+html.dark .qn-table {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.qn-td {
+  min-width: 96px;
+  padding: 8px 14px;
+  border-right: 1px solid rgba(0, 0, 0, 0.12);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  vertical-align: top;
+  outline: none;
+}
+
+html.dark .qn-td {
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.qn-table tr .qn-td:last-child {
+  border-right: none;
+}
+
+.qn-table tr:last-child .qn-td {
+  border-bottom: none;
+}
+
+.qn-row-zone,
+.qn-col-zone {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qn-row-zone {
+  height: 14px;
+}
+
+.qn-col-zone {
+  width: 14px;
+}
+
+.qn-zone-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 9999px;
+  background: rgba(23, 23, 23, 0.85);
+  color: #fff;
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0;
+  transform: scale(0.85);
+  transition: opacity 0.1s ease, transform 0.1s ease;
+  cursor: pointer;
+  user-select: none;
+}
+
+html.dark .qn-zone-btn {
+  background: rgba(245, 245, 245, 0.9);
+  color: #171717;
+}
+
+.qn-row-zone:hover .qn-zone-btn,
+.qn-col-zone:hover .qn-zone-btn {
+  opacity: 1;
+  transform: scale(1);
+}
