@@ -14,6 +14,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 import { ArrowLeft, LucideAngularModule, Pin, Settings, Trash2 } from 'lucide-angular';
 import { NotesFacade } from '../../application/notes.facade';
+import { ChecklistEditorService } from '../../application/services/checklist-editor.service';
 import { TableEditorService } from '../../application/services/table-editor.service';
 import { MAX_NOTE_CONTENT_LENGTH } from '../../core/models/note.defaults';
 import { NoteColor } from '../../core/models/note.model';
@@ -34,6 +35,7 @@ export class NoteDetailPage {
   private readonly facade = inject(NotesFacade);
   private readonly router = inject(Router);
   private readonly tableEditor = inject(TableEditorService);
+  private readonly checklistEditor = inject(ChecklistEditorService);
   private readonly toastService = inject(ToastService);
   private lastContentLimitToastAt = 0;
 
@@ -54,6 +56,7 @@ export class NoteDetailPage {
 
   private readonly saveContent = debounce((id: string, html: string) => this.facade.updateContent(id, html), 300);
   private detachTableEditor: (() => void) | null = null;
+  private detachChecklistEditor: (() => void) | null = null;
 
   constructor() {
     effect(() => {
@@ -62,8 +65,12 @@ export class NoteDetailPage {
         return;
       }
       this.detachTableEditor = this.tableEditor.attach(editorEl.nativeElement);
+      this.detachChecklistEditor = this.checklistEditor.attach(editorEl.nativeElement);
     });
-    inject(DestroyRef).onDestroy(() => this.detachTableEditor?.());
+    inject(DestroyRef).onDestroy(() => {
+      this.detachTableEditor?.();
+      this.detachChecklistEditor?.();
+    });
 
     effect(() => {
       const id = this.id();

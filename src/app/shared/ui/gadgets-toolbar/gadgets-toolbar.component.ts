@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
-import { LucideAngularModule, SeparatorHorizontal, Table } from 'lucide-angular';
+import { ListTodo, LucideAngularModule, SeparatorHorizontal, Table } from 'lucide-angular';
 import { ContentGadgetsService } from '../../../application/services/content-gadgets.service';
 
 @Component({
@@ -13,8 +13,8 @@ export class GadgetsToolbarComponent {
 
   protected readonly dividerIcon = SeparatorHorizontal;
   protected readonly tableIcon = Table;
+  protected readonly checklistIcon = ListTodo;
 
-  /** Keeps the editor selection alive when a toolbar button is pressed. */
   protected preventFocusLoss(event: MouseEvent): void {
     event.preventDefault();
   }
@@ -25,5 +25,9 @@ export class GadgetsToolbarComponent {
 
   protected insertTable(): void {
     this.gadgets.insertTable();
+  }
+
+  protected insertChecklistItem(): void {
+    this.gadgets.insertChecklistItem();
   }
 }

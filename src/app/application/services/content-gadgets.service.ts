@@ -1,11 +1,5 @@
 import { Injectable } from '@angular/core';
 
-/**
- * Inserts rich content blocks (dividers, tables) into the editor at the
- * current caret position. Uses execCommand so insertion plays nicely with
- * undo history and fires the native `input` event the editor already listens
- * to for autosave.
- */
 @Injectable({ providedIn: 'root' })
 export class ContentGadgetsService {
   insertDivider(): void {
@@ -14,6 +8,59 @@ export class ContentGadgetsService {
 
   insertTable(): void {
     document.execCommand('insertHTML', false, `${this.buildTableHtml(2, 2)}<p><br></p>`);
+  }
+
+  insertChecklistItem(): void {
+    const selection = document.getSelection();
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null;
+    const anchor = range ? this.closestElement(range.startContainer) : null;
+    const editorRoot = anchor?.closest<HTMLElement>('[contenteditable="true"]');
+    if (!selection || !range || !anchor || !editorRoot) {
+      return;
+    }
+
+    const currentLine = anchor.closest('.qn-checklist-item, p, div');
+    const referenceBlock = currentLine && currentLine !== editorRoot ? currentLine : null;
+
+    const item = this.createChecklistItemElement();
+    if (referenceBlock?.parentElement) {
+      referenceBlock.parentElement.insertBefore(item, referenceBlock.nextSibling);
+    } else {
+      editorRoot.appendChild(item);
+    }
+
+    const textNode = item.querySelector('.qn-checklist-text')?.firstChild;
+    if (textNode) {
+      const textRange = document.createRange();
+      textRange.setStart(textNode, textNode.textContent?.length ?? 0);
+      textRange.collapse(true);
+      selection.removeAllRanges();
+      selection.addRange(textRange);
+    }
+
+    editorRoot.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  private createChecklistItemElement(): HTMLDivElement {
+    const item = document.createElement('div');
+    item.className = 'qn-checklist-item';
+
+    const checkbox = document.createElement('span');
+    checkbox.className = 'qn-checkbox';
+    checkbox.setAttribute('contenteditable', 'false');
+    checkbox.setAttribute('role', 'checkbox');
+    checkbox.setAttribute('aria-checked', 'false');
+
+    const text = document.createElement('span');
+    text.className = 'qn-checklist-text';
+    text.appendChild(document.createTextNode(' '));
+
+    item.append(checkbox, text);
+    return item;
+  }
+
+  private closestElement(node: Node): Element | null {
+    return node.nodeType === Node.ELEMENT_NODE ? (node as Element) : node.parentElement;
   }
 
   private buildTableHtml(rows: number, cols: number): string {
