@@ -1,0 +1,45 @@
+name: Increment Patch Version
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+
+    # Evita bucles infinitos si el commit automático vuelve a disparar la acción
+    if: "!contains(github.event.head_commit.message, 'chore(release):')"
+
+    steps:
+      # 1. Descargar el código del repositorio
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      # 2. Configurar Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Ajusta a la versión de Node que use tu proyecto
+          cache: 'npm'
+
+      # 3. Configurar usuario de Git para hacer commits automáticos
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      # 4. Incrementar la versión patch en package.json
+      # npm version patch crea un commit y un tag git automáticamente
+      - name: Bump patch version
+        run: |
+          npm version patch -m "chore(release): %s [skip ci]"
+
+      # 5. Subir el commit y la nueva etiqueta (tag) a master
+      - name: Push changes
+        run: |
+          git push origin master --follow-tags
