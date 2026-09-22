@@ -52,9 +52,6 @@ export class NoteDetailPage {
   private detachTableEditor: (() => void) | null = null;
 
   constructor() {
-    // Wire up hover-to-grow table controls once the editor host exists; the
-    // same DOM node is reused across note switches, so this only needs to
-    // run once.
     effect(() => {
       const editorEl = this.editor();
       if (!editorEl || this.detachTableEditor) {
@@ -64,8 +61,6 @@ export class NoteDetailPage {
     });
     inject(DestroyRef).onDestroy(() => this.detachTableEditor?.());
 
-    // Track this note as opened (recent tabs), trigger inline rename for
-    // freshly created notes, or bounce back to the list if it no longer exists.
     effect(() => {
       const id = this.id();
       untracked(() => {
@@ -81,15 +76,13 @@ export class NoteDetailPage {
       });
     });
 
-    // Load the note content into the editor/title fields imperatively, only
-    // when switching notes, so typing never gets fought by a re-binding.
     effect(() => {
       const id = this.id();
       const editorEl = this.editor();
-      if (!editorEl) {
+      const note = this.facade.noteById(id);
+      if (!editorEl || document.activeElement === editorEl.nativeElement) {
         return;
       }
-      const note = untracked(() => this.facade.noteById(id));
       editorEl.nativeElement.innerHTML = note?.contentHtml ?? '';
     });
   }
@@ -101,7 +94,6 @@ export class NoteDetailPage {
   }
 
   protected selectColor(color: NoteColor): void {
-    debugger
     this.facade.updateColor(this.id(), color);
   }
 
@@ -123,12 +115,10 @@ export class NoteDetailPage {
   }
 
   protected openRecentNote(id: string): void {
-    debugger
     this.router.navigate(['/note', id]);
   }
 
   protected closeRecentTab(id: string): void {
-    debugger
     const wasActiveTab = id === this.id();
     this.facade.removeFromRecent(id);
     if (wasActiveTab) {

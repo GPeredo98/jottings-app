@@ -3,6 +3,7 @@ import { Router, RouterLink } from '@angular/router';
 import { LogOut, LucideAngularModule, MoonStar, SunMedium } from 'lucide-angular';
 import { AuthService } from '../../core/auth/auth.service';
 import { ThemeService } from '../../core/theme/theme.service';
+import { version } from '../../../../package.json';
 
 @Component({
   selector: 'qn-settings-page',
@@ -17,6 +18,7 @@ export class SettingsPage {
 
   protected readonly currentTheme = this.themeService.currentTheme;
   protected readonly currentUser = this.authService.currentUser;
+  protected readonly appVersion = version;
   protected readonly themeLabel = computed(() =>
     this.currentTheme() === 'dark' ? 'Switch to light mode' : 'Switch to dark mode',
   );

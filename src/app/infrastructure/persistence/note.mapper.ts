@@ -1,6 +1,5 @@
 import { Note, NoteColor } from '../../core/models/note.model';
 
-/** Shape of a row in the `notes` table (see Supabase schema notes). */
 export interface NoteRow {
   id: string;
   user_id: string;
@@ -36,4 +35,23 @@ export function mapNoteToRow(note: Note, userId: string): NoteRow {
     created_at: note.createdAt,
     updated_at: note.updatedAt,
   };
+}
+
+export function mapChangesToRow(
+  changes: Partial<Pick<Note, 'title' | 'contentHtml' | 'color' | 'pinned'>>,
+): Partial<Pick<NoteRow, 'title' | 'content_html' | 'color' | 'pinned'>> {
+  const row: Partial<Pick<NoteRow, 'title' | 'content_html' | 'color' | 'pinned'>> = {};
+  if (changes.title !== undefined) {
+    row.title = changes.title;
+  }
+  if (changes.contentHtml !== undefined) {
+    row.content_html = changes.contentHtml;
+  }
+  if (changes.color !== undefined) {
+    row.color = changes.color;
+  }
+  if (changes.pinned !== undefined) {
+    row.pinned = changes.pinned;
+  }
+  return row;
 }

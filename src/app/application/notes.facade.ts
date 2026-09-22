@@ -2,14 +2,9 @@ import { Injectable, Signal, computed, effect, inject, signal } from '@angular/c
 import { AuthService } from '../core/auth/auth.service';
 import { Note, NoteColor } from '../core/models/note.model';
 import { DEFAULT_NOTE_OWNER, DEFAULT_NOTE_TITLE, MAX_RECENT_NOTES } from '../core/models/note.defaults';
-import { NOTE_REPOSITORY } from '../core/ports/note-repository.port';
+import { NOTE_REPOSITORY, NoteChange } from '../core/ports/note-repository.port';
 import { RECENT_NOTES_REPOSITORY } from '../core/ports/recent-notes-repository.port';
 
-/**
- * Single source of truth for note state. Components only read signals from
- * this facade and call its methods; all persistence and business rules live
- * here so components stay presentation-only.
- */
 @Injectable({ providedIn: 'root' })
 export class NotesFacade {
   private readonly noteRepository = inject(NOTE_REPOSITORY);
@@ -19,14 +14,27 @@ export class NotesFacade {
   private readonly notesState = signal<Note[]>([]);
   private readonly recentIdsState = signal<string[]>([]);
 
-  /** Id of the note just created, consumed once to trigger inline rename in the tabs bar. */
   readonly newNoteId = signal<string | null>(null);
 
   constructor() {
-    // Keep in-memory notes aligned with the authenticated account.
     effect(() => {
       this.authService.currentUser();
       void this.reload();
+    });
+
+    effect((onCleanup) => {
+      const userId = this.authService.currentUserId();
+      if (!userId) {
+        return;
+      }
+      const unsubscribe = this.noteRepository.subscribeToChanges(userId, (event) => {
+        if (event.type === 'delete') {
+          this.notesState.update((notes) => notes.filter((note) => note.id !== event.id));
+        } else {
+          this.applyRemoteNote(event.note);
+        }
+      });
+      onCleanup(unsubscribe);
     });
   }
 
@@ -39,17 +47,15 @@ export class NotesFacade {
     this.recentIdsState.set(recentIds);
   }
 
-  /** All notes, pinned first, most recently updated first. */
   readonly notes: Signal<Note[]> = computed(() =>
     [...this.notesState()].sort((a, b) => {
       if (a.pinned !== b.pinned) {
         return a.pinned ? -1 : 1;
       }
-      return b.updatedAt.localeCompare(a.updatedAt);
+      return Date.parse(b.updatedAt) - Date.parse(a.updatedAt);
     }),
   );
 
-  /** Notes recently opened in the detail view, newest first, shown as tabs. */
   readonly recentNotes: Signal<Note[]> = computed(() => {
     const notes = this.notesState();
     return this.recentIdsState()
@@ -74,12 +80,11 @@ export class NotesFacade {
       pinned: false,
     };
     this.notesState.update((notes) => [...notes, note]);
-    void this.noteRepository.save(note);
+    void this.noteRepository.create(note);
     this.newNoteId.set(note.id);
     return note;
   }
 
-  /** Consumes the pending new-note marker so inline rename only triggers once. */
   clearNewNoteId(): void {
     this.newNoteId.set(null);
   }
@@ -110,7 +115,6 @@ export class NotesFacade {
     this.removeFromRecent(id);
   }
 
-  /** Marks a note as opened, pushing it to the front of the recent tabs. */
   openNote(id: string): void {
     if (!this.noteById(id)) {
       return;
@@ -122,25 +126,58 @@ export class NotesFacade {
     void this.recentNotesRepository.saveRecentIds(this.recentIdsState());
   }
 
-  /** Removes a note from the recent tabs without deleting the note itself. */
   removeFromRecent(id: string): void {
     this.recentIdsState.update((ids) => ids.filter((recentId) => recentId !== id));
     void this.recentNotesRepository.saveRecentIds(this.recentIdsState());
   }
 
-  private updateNote(id: string, changes: Partial<Omit<Note, 'id' | 'createdAt'>>): void {
-    let updated: Note | undefined;
-    this.notesState.update((notes) =>
-      notes.map((note) => {
-        if (note.id !== id) {
-          return note;
-        }
-        updated = { ...note, ...changes, updatedAt: new Date().toISOString() };
-        return updated;
-      }),
-    );
-    if (updated) {
-      void this.noteRepository.save(updated);
+  private updateNote(id: string, changes: NoteChange): void {
+    const current = this.noteById(id);
+    if (!current) {
+      return;
     }
+    const baseUpdatedAt = current.updatedAt;
+    const updatedAt = new Date().toISOString();
+    const updated: Note = { ...current, ...changes, updatedAt };
+    this.notesState.update((notes) => notes.map((note) => (note.id === id ? updated : note)));
+    void this.persistUpdate(id, changes, updatedAt, baseUpdatedAt);
+  }
+
+  private async persistUpdate(
+    id: string,
+    changes: NoteChange,
+    updatedAt: string,
+    baseUpdatedAt: string,
+    isRetry = false,
+  ): Promise<void> {
+    const outcome = await this.noteRepository.update(id, changes, updatedAt, baseUpdatedAt);
+    if (!outcome.conflict || !outcome.latest || isRetry) {
+      return;
+    }
+
+    this.applyRemoteNote(outcome.latest);
+    const current = this.noteById(id);
+    if (!current) {
+      return;
+    }
+    const retryUpdatedAt = new Date().toISOString();
+    const reconciled: Note = { ...current, ...changes, updatedAt: retryUpdatedAt };
+    this.notesState.update((notes) => notes.map((note) => (note.id === id ? reconciled : note)));
+    await this.persistUpdate(id, changes, retryUpdatedAt, outcome.latest.updatedAt, true);
+  }
+
+  private applyRemoteNote(note: Note): void {
+    this.notesState.update((notes) => {
+      const index = notes.findIndex((existing) => existing.id === note.id);
+      if (index === -1) {
+        return [...notes, note];
+      }
+      if (Date.parse(notes[index].updatedAt) >= Date.parse(note.updatedAt)) {
+        return notes;
+      }
+      const next = [...notes];
+      next[index] = note;
+      return next;
+    });
   }
 }

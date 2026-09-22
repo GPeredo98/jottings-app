@@ -1,6 +1,9 @@
 {
   "name": "jottings-app",
-  "version": "1.0.0",
+  "version": "0.1.0",
+  "description": "Jottings App",
+  "author": "Gabriel Peredo",
+  "homepage": "https://www.jottings.space",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
