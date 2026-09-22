@@ -24,7 +24,6 @@ export class RecentTabsComponent {
   private readonly renameInput = viewChild<ElementRef<HTMLInputElement>>('renameInput');
 
   constructor() {
-    // A freshly created note arrives ready to be renamed inline.
     effect(() => {
       const id = this.autoRenameId();
       if (id) {
@@ -32,9 +31,7 @@ export class RecentTabsComponent {
       }
     });
 
-    // Focus and select the rename input as soon as it appears in the DOM.
     effect(() => {
-      debugger
       const el = this.renameInput();
       if (el && this.editingId()) {
         el.nativeElement.focus();
@@ -44,7 +41,6 @@ export class RecentTabsComponent {
   }
 
   protected onTabClick(note: Note): void {
-    debugger
     if (note.id !== this.activeId()) {
       this.open.emit(note.id);
       return;

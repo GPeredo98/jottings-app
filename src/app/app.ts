@@ -13,7 +13,6 @@ import { ToastContainerComponent } from './shared/ui/toast/toast-container.compo
 })
 export class App {
   constructor(
-    // Force service initialization when the app starts.
     private readonly _themeService: ThemeService,
     private readonly _authService: AuthService,
     appUpdateService: AppUpdateService,

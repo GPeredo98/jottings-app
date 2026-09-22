@@ -20,7 +20,6 @@ export class AppUpdateService {
       .pipe(first((event): event is VersionReadyEvent => event.type === 'VERSION_READY'))
       .subscribe(() => document.location.reload());
 
-    // Wait for the app to be stable before polling, so it never delays initial load.
     this.appRef.isStable.pipe(first((stable) => stable)).subscribe(() => {
       void this.swUpdate.checkForUpdate();
       const intervalId = setInterval(() => void this.swUpdate.checkForUpdate(), CHECK_INTERVAL_MS);

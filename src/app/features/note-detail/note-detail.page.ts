@@ -12,7 +12,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { ArrowLeft, LucideAngularModule, Pin, Settings, Trash2 } from 'lucide-angular';
+import { ArrowLeft, LucideAngularModule, Pin, Settings2, Trash2 } from 'lucide-angular';
 import { NotesFacade } from '../../application/notes.facade';
 import { ChecklistEditorService } from '../../application/services/checklist-editor.service';
 import { TableEditorService } from '../../application/services/table-editor.service';
@@ -50,7 +50,7 @@ export class NoteDetailPage {
   protected readonly backIcon = ArrowLeft;
   protected readonly pinIcon = Pin;
   protected readonly trashIcon = Trash2;
-  protected readonly settingsIcon = Settings;
+  protected readonly settingsIcon = Settings2;
 
   private readonly editor = viewChild<ElementRef<HTMLDivElement>>('editor');
 

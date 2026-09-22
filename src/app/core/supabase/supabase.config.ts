@@ -1,3 +1,2 @@
-// Replace with your Supabase project values (Project Settings -> API).
 export const SUPABASE_URL = 'https://vlbiybxbmbdezqaxrvgs.supabase.co';
 export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsYml5YnhibWJkZXpxYXhydmdzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg1MDQ0MDMsImV4cCI6MjEwNDA4MDQwM30.aDMmnacmNLFlXfWH38TQpYZK0gWomEN-kcxK_G-yfyE';

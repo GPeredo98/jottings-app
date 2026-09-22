@@ -5,9 +5,22 @@
       <p class="text-sm text-neutral-500 dark:text-neutral-400">{{ currentUser() }}</p>
     </div>
     <div class="flex items-center gap-2">
+      <div class="relative hidden sm:block">
+        <lucide-icon
+          [img]="searchIcon"
+          class="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+        ></lucide-icon>
+        <input
+          type="search"
+          placeholder="Search notes"
+          class="w-64 rounded-lg border border-neutral-300 bg-transparent py-2 pl-10 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 dark:border-neutral-700 dark:text-neutral-100"
+          [value]="searchTerm()"
+          (input)="onSearchInput($event)"
+        />
+      </div>
       <button
         type="button"
-        class="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800"
+        class="inline-flex items-center gap-2 rounded-lg h-9.5 border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-100 dark:border-neutral-700 dark:text-neutral-100 dark:hover:bg-neutral-800"
         (click)="openSettings()"
       >
         <lucide-icon [img]="settingsIcon" class="h-4 w-4"></lucide-icon>
@@ -15,10 +28,28 @@
     </div>
   </header>
 
+  <div class="relative mb-6 sm:hidden">
+    <lucide-icon
+      [img]="searchIcon"
+      class="pointer-events-none absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"
+    ></lucide-icon>
+    <input
+      type="search"
+      placeholder="Search notes"
+      class="w-full rounded-lg border border-neutral-300 bg-transparent py-2 pl-10 pr-3 text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-cyan-300 dark:border-neutral-700 dark:text-neutral-100"
+      [value]="searchTerm()"
+      (input)="onSearchInput($event)"
+    />
+  </div>
+
   @if (notes().length === 0) {
     <div class="flex flex-1 flex-col items-center justify-center gap-2 text-neutral-500 dark:text-neutral-400">
-      <p class="text-lg">No notes yet</p>
-      <p class="text-sm">Create your first note to get started</p>
+      @if (hasNotes()) {
+        <p class="text-lg">No notes match your search</p>
+      } @else {
+        <p class="text-lg">No notes yet</p>
+        <p class="text-sm">Create your first note to get started</p>
+      }
     </div>
   } @else {
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

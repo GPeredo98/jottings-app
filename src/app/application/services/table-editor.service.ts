@@ -82,9 +82,6 @@ export class TableEditorService {
       this.insertColumn(table, Number(zone.dataset['index']));
     }
 
-    // Overlay zones are UI-only scaffolding and must never end up in the
-    // saved note HTML, so tear them down before the input event (which the
-    // editor reads `innerHTML` from for autosave) fires.
     this.clearOverlays(wrap);
     root.dispatchEvent(new Event('input', { bubbles: true }));
     this.buildOverlays(wrap);

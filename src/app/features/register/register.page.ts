@@ -27,7 +27,6 @@ export class RegisterPage {
     }
 
     if (!this.authService.isAuthenticated()) {
-      // Email confirmation required before a session exists.
       this.errorMessage.set(result.message ?? 'Check your email to confirm your account.');
       return;
     }
