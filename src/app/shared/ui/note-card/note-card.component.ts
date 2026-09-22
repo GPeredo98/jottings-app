@@ -30,6 +30,7 @@ export class NoteCardComponent {
     }),
   );
   protected readonly pinIcon = Pin;
+  protected readonly pinIconClass = computed(() => (this.note().pinned ? 'h-4 w-4 fill-current' : 'h-4 w-4'));
   protected readonly trashIcon = Trash2;
   protected readonly ownerLabel = computed(() =>
     this.note().owner === this.authService.currentUser() ? 'You' : this.note().owner,

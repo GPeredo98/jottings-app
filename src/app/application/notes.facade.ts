@@ -1,15 +1,22 @@
 import { Injectable, Signal, computed, effect, inject, signal } from '@angular/core';
 import { AuthService } from '../core/auth/auth.service';
 import { Note, NoteColor } from '../core/models/note.model';
-import { DEFAULT_NOTE_OWNER, DEFAULT_NOTE_TITLE, MAX_RECENT_NOTES } from '../core/models/note.defaults';
+import {
+  DEFAULT_NOTE_OWNER,
+  DEFAULT_NOTE_TITLE,
+  MAX_NOTES_PER_USER,
+  MAX_RECENT_NOTES,
+} from '../core/models/note.defaults';
 import { NOTE_REPOSITORY, NoteChange } from '../core/ports/note-repository.port';
 import { RECENT_NOTES_REPOSITORY } from '../core/ports/recent-notes-repository.port';
+import { ToastService } from '../shared/ui/toast/toast.service';
 
 @Injectable({ providedIn: 'root' })
 export class NotesFacade {
   private readonly noteRepository = inject(NOTE_REPOSITORY);
   private readonly recentNotesRepository = inject(RECENT_NOTES_REPOSITORY);
   private readonly authService = inject(AuthService);
+  private readonly toastService = inject(ToastService);
 
   private readonly notesState = signal<Note[]>([]);
   private readonly recentIdsState = signal<string[]>([]);
@@ -67,7 +74,12 @@ export class NotesFacade {
     return this.notesState().find((note) => note.id === id);
   }
 
-  createNote(): Note {
+  createNote(): Note | null {
+    if (this.notesState().length >= MAX_NOTES_PER_USER) {
+      this.toastService.show(`You reach the limite of ${MAX_NOTES_PER_USER} jottings on the free plan`);
+      return null;
+    }
+
     const now = new Date().toISOString();
     const note: Note = {
       id: crypto.randomUUID(),

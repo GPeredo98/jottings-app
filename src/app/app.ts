@@ -3,9 +3,10 @@ import { RouterOutlet } from '@angular/router';
 import { AuthService } from './core/auth/auth.service';
 import { ThemeService } from './core/theme/theme.service';
 import { AppUpdateService } from './core/update/app-update.service';
+import { ToastContainerComponent } from './shared/ui/toast/toast-container.component';
 
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, ToastContainerComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

@@ -15,12 +15,14 @@ import { Router, RouterLink } from '@angular/router';
 import { ArrowLeft, LucideAngularModule, Pin, Settings, Trash2 } from 'lucide-angular';
 import { NotesFacade } from '../../application/notes.facade';
 import { TableEditorService } from '../../application/services/table-editor.service';
+import { MAX_NOTE_CONTENT_LENGTH } from '../../core/models/note.defaults';
 import { NoteColor } from '../../core/models/note.model';
 import { cardClassForColor, NOTE_COLOR_SWATCHES } from '../../shared/constants/note-colors';
 import { debounce } from '../../shared/utils/debounce.util';
 import { FormattingToolbarComponent } from '../../shared/ui/formatting-toolbar/formatting-toolbar.component';
 import { GadgetsToolbarComponent } from '../../shared/ui/gadgets-toolbar/gadgets-toolbar.component';
 import { RecentTabsComponent } from '../../shared/ui/recent-tabs/recent-tabs.component';
+import { ToastService } from '../../shared/ui/toast/toast.service';
 
 @Component({
   selector: 'qn-note-detail-page',
@@ -32,6 +34,8 @@ export class NoteDetailPage {
   private readonly facade = inject(NotesFacade);
   private readonly router = inject(Router);
   private readonly tableEditor = inject(TableEditorService);
+  private readonly toastService = inject(ToastService);
+  private lastContentLimitToastAt = 0;
 
   readonly id = input.required<string>();
 
@@ -91,6 +95,39 @@ export class NoteDetailPage {
     const editorEl = event.target as HTMLDivElement;
     const value = this.tableEditor.getPersistableHtml(editorEl);
     this.saveContent(this.id(), value);
+  }
+
+  protected onEditorBeforeInput(event: InputEvent): void {
+    if (event.inputType.startsWith('delete') || event.inputType.startsWith('history')) {
+      return;
+    }
+
+    const editorEl = event.target as HTMLDivElement;
+    const currentLength = this.tableEditor.getPersistableHtml(editorEl).length;
+    const incomingLength = this.getIncomingInputLength(event);
+
+    if (currentLength + incomingLength > MAX_NOTE_CONTENT_LENGTH) {
+      event.preventDefault();
+      this.notifyContentLimitReached();
+    }
+  }
+
+  private getIncomingInputLength(event: InputEvent): number {
+    if (event.inputType === 'insertFromPaste' || event.inputType === 'insertFromDrop') {
+      const html = event.dataTransfer?.getData('text/html');
+      const text = event.dataTransfer?.getData('text/plain');
+      return (html || text || '').length;
+    }
+    return event.data?.length ?? 0;
+  }
+
+  private notifyContentLimitReached(): void {
+    const now = Date.now();
+    if (now - this.lastContentLimitToastAt < 2000) {
+      return;
+    }
+    this.lastContentLimitToastAt = now;
+    this.toastService.show(`You reach the limite of ${MAX_NOTE_CONTENT_LENGTH} characters on the free plan`);
   }
 
   protected selectColor(color: NoteColor): void {

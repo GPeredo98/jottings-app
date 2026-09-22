@@ -23,6 +23,9 @@ export class NotesListPage {
 
   protected createNote(): void {
     const note = this.facade.createNote();
+    if (!note) {
+      return;
+    }
     this.router.navigate(['/note', note.id]);
   }
 

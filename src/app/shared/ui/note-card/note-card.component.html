@@ -12,7 +12,7 @@
       title="Pin note"
       (click)="$event.stopPropagation(); togglePinned.emit(note().id)"
     >
-      <lucide-icon [img]="pinIcon" class="h-4 w-4" [attr.fill]="note().pinned ? 'currentColor' : 'none'"></lucide-icon>
+      <lucide-icon [img]="pinIcon" [class]="pinIconClass()"></lucide-icon>
     </button>
   </header>
 

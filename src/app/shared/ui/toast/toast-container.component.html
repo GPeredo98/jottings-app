@@ -1,0 +1,10 @@
+<div class="pointer-events-none fixed inset-x-0 bottom-6 z-[100] flex flex-col items-center gap-2 px-4">
+  @for (toast of toasts(); track toast.id) {
+    <div
+      class="pointer-events-auto max-w-md rounded-lg bg-neutral-900 px-4 py-2.5 text-center text-sm text-white shadow-lg dark:bg-neutral-100 dark:text-neutral-900"
+      (click)="dismiss(toast.id)"
+    >
+      {{ toast.message }}
+    </div>
+  }
+</div>
